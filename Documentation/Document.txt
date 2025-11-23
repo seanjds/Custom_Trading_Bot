@@ -1,0 +1,51 @@
+Notes / gotchas
+
+Symbol & quote: this example assumes a /-style pair like BTC/USDT. Adjust _base_quote if your exchange uses a different separator.
+
+Min lot size / precision: on live, consult exchange.markets[symbol] for limits.amount.min and precision.amount; clamp/round buy_qty accordingly if your exchange is strict.
+
+One-position toggle: for multi-entry scaling or shorting, track a position object instead of the simple in_position boolean.
+
+Rate limits: you’re polling every few seconds. If you scale up symbols/timeframes, add caching or websockets.
+
+Backtesting: reuse bollinger_bands and the same signals in your backtest loop for parity.
+
+Symbol & balances: Your example used 'TRUMP/USD'. Make sure that pair exists on your chosen exchange in ccxt. If it doesn’t, switch to an available symbol (e.g., BTC/USDT).
+
+Sizing & precision: The broker rounds to the market’s precision.amount when available and enforces limits.amount.min if provided by the exchange metadata.
+
+Modes: Flip mode in generate_signals(..., mode="breakout") if you want a trend-following variant (buy on break above upper band, sell on break below lower band).
+
+Logging: Trades are appended to logs/trade_log.csv via your existing TradeLogger.
+
+
+###Fire signal on new candle only
+Each OHLCV candle from fetch_ohlcv() has a timestamp (time).
+
+The loop stores the last processed bar in last_bar_time.
+
+If the latest candle has the same timestamp as before, it means we’re still within the same bar — no trade.
+
+As soon as a new bar arrives (new timestamp), it allows one signal execution.
+
+If your fetch_ohlcv() returns timestamps as UNIX (int), convert them once: and compare that to last_bar_time.
+current_bar_time = pd.to_datetime(last["time"], unit="ms")
+
+///////////////
+
+UPGRADES
+
+Regime filters (trend/volatility gating)
+
+First-cross (“edge”) signals
+
+Stops / take-profit / optional trailing stop
+
+Cooldown to reduce churn
+
+Fees + slippage
+
+Same “new-bar only” execution (use previous bar’s signal; trade at next open)
+
+BACKTESTING UPDATES
+drop-in upgrades to add (A) constant-risk sizing and (B) a time-of-day filter (ET) to your backtester,

@@ -1,0 +1,8 @@
+ccxt>=4.0.0
+pandas
+numpy
+python-dotenv
+requests
+joblib
+Matplotlib
+Seaborg
